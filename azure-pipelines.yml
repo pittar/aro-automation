@@ -9,21 +9,72 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  LOCATION: 'canadacentral'
+  RESOURCEGROUP: 'aro-rg'
+  CLUSTER: 'aro-nonprod'
+
 steps:
-- script: echo Hello, world!
+- script: echo Begin cluster creation
   displayName: 'Run a one-line script'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
 - task: AzureCLI@2
+  displayName: 'Create ARO Cluster'
   inputs:
     azureSubscription: 'Pay-As-You-Go(ea271b60-2346-49e6-85fb-422408e476ba)'
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
       #!/bin/bash
-      echo $1
-      echo $2
-    arguments: 'resource-group cluster-name'
+      
+      echo "Create Resource Group"
+      az group create \
+        --name $RESOURCEGROUP \
+        --location $LOCATION
+
+      echo "Create VNet"
+      az network vnet create \
+        --resource-group $RESOURCEGROUP \
+        --name aro-vnet \
+        --address-prefixes 10.0.0.0/22
+
+      echo "Create supervisor node subnet"
+      az network vnet subnet create \
+        --resource-group $RESOURCEGROUP \
+        --vnet-name aro-vnet \
+        --name supervisor-subnet \
+        --address-prefixes 10.0.0.0/23 \
+        --service-endpoints Microsoft.ContainerRegistry
+
+      echo "Create worker node subnet"
+      az network vnet subnet create \
+        --resource-group $RESOURCEGROUP \
+        --vnet-name aro-vnet \
+        --name worker-subnet \
+        --address-prefixes 10.0.2.0/23 \
+        --service-endpoints Microsoft.ContainerRegistry
+
+      echo "Disable private link policies"
+      az network vnet subnet update \
+        --name supervisor-subnet \
+        --resource-group $RESOURCEGROUP \
+        --vnet-name aro-vnet \
+        --disable-private-link-service-network-policies true
+
+      echo "Create the cluster!"
+      az aro create \
+        --resource-group $RESOURCEGROUP \
+        --name $CLUSTER \
+        --vnet aro-vnet \
+        --master-subnet supervisor-subnet \
+        --worker-subnet worker-subnet
+
+      echo "Cluster creation complete.  Fetching console URL and credentials."
+      az aro show \
+        --name $CLUSTER \
+        --resource-group $RESOURCEGROUP \
+        --query "consoleProfile.url" -o tsv
+
+      az aro list-credentials \
+        --name $CLUSTER \
+        --resource-group $RESOURCEGROUP

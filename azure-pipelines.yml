@@ -17,3 +17,12 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Pay-As-You-Go(ea271b60-2346-49e6-85fb-422408e476ba)'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      echo ${@1}
+      echo ${@1}
+    arguments: '"resource-group" "cluster-name"'

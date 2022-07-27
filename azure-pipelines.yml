@@ -76,7 +76,7 @@ steps:
       echo "Create the cluster!"
       az aro create \
         --resource-group $RESOURCEGROUP \
-        --cluster-resource-group "$CLUSTER"-cluster-rg
+        --cluster-resource-group "$CLUSTER"-cluster-rg \
         --name $CLUSTER \
         --vnet aro-vnet \
         --master-subnet supervisor-subnet \

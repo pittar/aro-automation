@@ -28,41 +28,41 @@ steps:
     useGlobalConfig: true
     inlineScript: |
       #!/bin/bash
-      az provider register -n Microsoft.RedHatOpenShift --wait
+      # az provider register -n Microsoft.RedHatOpenShift --wait
       
-      echo "Create Resource Group"
-      az group create \
-        --name $RESOURCEGROUP \
-        --location $LOCATION
+      # echo "Create Resource Group"
+      # az group create \
+      #   --name $RESOURCEGROUP \
+      #   --location $LOCATION
 
-      echo "Create VNet"
-      az network vnet create \
-        --resource-group $RESOURCEGROUP \
-        --name aro-vnet \
-        --address-prefixes 10.0.0.0/22
+      # echo "Create VNet"
+      # az network vnet create \
+      #   --resource-group $RESOURCEGROUP \
+      #   --name aro-vnet \
+      #   --address-prefixes 10.0.0.0/22
 
-      echo "Create supervisor node subnet"
-      az network vnet subnet create \
-        --resource-group $RESOURCEGROUP \
-        --vnet-name aro-vnet \
-        --name supervisor-subnet \
-        --address-prefixes 10.0.0.0/23 \
-        --service-endpoints Microsoft.ContainerRegistry
+      # echo "Create supervisor node subnet"
+      # az network vnet subnet create \
+      #   --resource-group $RESOURCEGROUP \
+      #   --vnet-name aro-vnet \
+      #   --name supervisor-subnet \
+      #   --address-prefixes 10.0.0.0/23 \
+      #   --service-endpoints Microsoft.ContainerRegistry
 
-      echo "Create worker node subnet"
-      az network vnet subnet create \
-        --resource-group $RESOURCEGROUP \
-        --vnet-name aro-vnet \
-        --name worker-subnet \
-        --address-prefixes 10.0.2.0/23 \
-        --service-endpoints Microsoft.ContainerRegistry
+      # echo "Create worker node subnet"
+      # az network vnet subnet create \
+      #   --resource-group $RESOURCEGROUP \
+      #   --vnet-name aro-vnet \
+      #   --name worker-subnet \
+      #   --address-prefixes 10.0.2.0/23 \
+      #   --service-endpoints Microsoft.ContainerRegistry
 
-      echo "Disable private link policies"
-      az network vnet subnet update \
-        --name supervisor-subnet \
-        --resource-group $RESOURCEGROUP \
-        --vnet-name aro-vnet \
-        --disable-private-link-service-network-policies true
+      # echo "Disable private link policies"
+      # az network vnet subnet update \
+      #   --name supervisor-subnet \
+      #   --resource-group $RESOURCEGROUP \
+      #   --vnet-name aro-vnet \
+      #   --disable-private-link-service-network-policies true
 
       echo "Create the cluster!"
       az aro create \
@@ -70,7 +70,8 @@ steps:
         --name $CLUSTER \
         --vnet aro-vnet \
         --master-subnet supervisor-subnet \
-        --worker-subnet worker-subnet
+        --worker-subnet worker-subnet \
+        --debug
 
       echo "Cluster creation complete.  Fetching console URL and credentials."
       az aro show \

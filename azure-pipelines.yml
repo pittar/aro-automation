@@ -25,6 +25,7 @@ steps:
     scriptType: 'bash'
     addSpnToEnvironment: true
     scriptLocation: 'inlineScript'
+    useGlobalConfig: true
     inlineScript: |
       #!/bin/bash
       az provider register -n Microsoft.RedHatOpenShift --wait

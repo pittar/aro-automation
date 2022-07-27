@@ -16,7 +16,7 @@ variables:
 
 ### Subscription ID to set sub context for automation ###
 parameters:
-  - name: subscriptionGuid
+  - name: clientId
     type: string
   - name: clientSecret
     type: string

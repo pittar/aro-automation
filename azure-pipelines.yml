@@ -14,6 +14,13 @@ variables:
   RESOURCEGROUP: 'aro-rg'
   CLUSTER: 'aro-nonprod'
 
+### Subscription ID to set sub context for automation ###
+parameters:
+  - name: subscriptionGuid
+    type: string
+  - name: clientSecret
+    type: string
+
 steps:
 - script: echo Begin cluster creation
   displayName: 'Run a one-line script'
@@ -71,14 +78,36 @@ steps:
         --vnet aro-vnet \
         --master-subnet supervisor-subnet \
         --worker-subnet worker-subnet \
+        --client-id ${{ parameters.clientID }} \
+        --client-secret ${{ parameters.clientSecret }} \
         --debug
 
-      echo "Cluster creation complete.  Fetching console URL and credentials."
-      az aro show \
-        --name $CLUSTER \
-        --resource-group $RESOURCEGROUP \
-        --query "consoleProfile.url" -o tsv
+      # az aro create \
+      #   --resource-group rg-$subscription \
+      #   --name ocp-$subscription \
+      #   --cluster-resource-group rg-$subscription-cluster \
+      #   --domain ${{ parameters.domain }} \
+      #   --vnet-resource-group rg-$subscription-networking \
+      #   --vnet $VNETNAME \
+      #   --master-subnet snet-$subscription-canadacentral-mgmt \
+      #   --worker-subnet snet-$subscription-canadacentral-app \
+      #   --apiserver-visibility Private \
+      #   --ingress-visibility Private \
+      #   --client-id ${{ parameters.clientID }} \
+      #   --client-secret ${{ parameters.clientSecret }} \
+      #   --pull-secret @pullsecret.txt
 
-      az aro list-credentials \
-        --name $CLUSTER \
-        --resource-group $RESOURCEGROUP
+      # echo "Cluster creation complete.  Fetching console URL and credentials."
+      # az aro show \
+      #   --name $CLUSTER \
+      #   --resource-group $RESOURCEGROUP \
+      #   --query "consoleProfile.url" -o tsv
+
+      # az aro list-credentials \
+      #   --name $CLUSTER \
+      #   --resource-group $RESOURCEGROUP
+### Deploy the ARO Cluster, not necessary while developing
+  # - name: deploy
+  #   displayName: "Deploy ARO Cluster"
+  #   type: boolean
+  #   default: true

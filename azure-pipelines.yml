@@ -23,6 +23,7 @@ steps:
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
-      echo ${@1}
-      echo ${@1}
-    arguments: '"resource-group" "cluster-name"'
+      #!/bin/bash
+      echo $1
+      echo $2
+    arguments: 'resource-group cluster-name'

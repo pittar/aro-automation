@@ -27,6 +27,7 @@ steps:
     scriptLocation: 'inlineScript'
     inlineScript: |
       #!/bin/bash
+      az provider register -n Microsoft.RedHatOpenShift --wait
       
       echo "Create Resource Group"
       az group create \

@@ -21,7 +21,7 @@ steps:
 - task: AzureCLI@2
   displayName: 'Create ARO Cluster'
   inputs:
-    azureSubscription: ${{ parameters.serviceConnection }}
+    azureSubscription: 'Pay-As-You-Go(ea271b60-2346-49e6-85fb-422408e476ba)'
     scriptType: 'bash'
     addSpnToEnvironment: true
     scriptLocation: 'inlineScript'

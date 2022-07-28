@@ -13,6 +13,7 @@ variables:
   LOCATION: 'canadacentral'
   RESOURCEGROUP: 'aro-rg'
   CLUSTER: 'aro-nonprod'
+  kubeadminPass: 'none'
 
 ### Subscription ID to set sub context for automation ###
 parameters:

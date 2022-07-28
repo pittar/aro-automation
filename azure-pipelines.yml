@@ -25,6 +25,8 @@ parameters:
 
 steps:
 - task: Bash@3
+  name: DownloadOC
+  displayName: 'Download stable oc cli'
   inputs:
     targetType: 'inline'
     script: |
@@ -36,7 +38,7 @@ steps:
 - task: AzureCLI@2
   name: DownloadPullSecret
   displayName: 'Download pullsecret'
-  enabled: false
+  enabled: true
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
@@ -58,7 +60,7 @@ steps:
 - task: AzureCLI@2
   name: CreateRG
   displayName: 'Create ARO ResourceGroup'
-  enabled: false
+  enabled: true
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
@@ -77,7 +79,7 @@ steps:
 - task: AzureCLI@2
   name: CreateVNET
   displayName: 'Create ARO VNet'
-  enabled: false
+  enabled: true
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
@@ -94,7 +96,7 @@ steps:
 - task: AzureCLI@2
   name: CreateSubnets
   displayName: 'Create and Configure ARO Subnets'
-  enabled: false
+  enabled: true
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
@@ -128,7 +130,7 @@ steps:
 - task: AzureCLI@2
   name: CreateCluster
   displayName: 'Create ARO Cluster'
-  enabled: false
+  enabled: true
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'

@@ -25,6 +25,7 @@ parameters:
 
 steps:
 - task: AzureCLI@2
+  name: DownloadPullSecret
   displayName: 'Download pullsecret'
   enabled: false
   inputs:
@@ -47,6 +48,7 @@ steps:
       ls -la
 
 - task: AzureCLI@2
+  name: CreateRG
   displayName: 'Create ARO ResourceGroup'
   enabled: false
   inputs:
@@ -65,6 +67,7 @@ steps:
         --location $LOCATION
 
 - task: AzureCLI@2
+  name: CreateVNET
   displayName: 'Create ARO VNet'
   enabled: false
   inputs:
@@ -81,6 +84,7 @@ steps:
         --address-prefixes 10.0.0.0/22
 
 - task: AzureCLI@2
+  name: CreateSubnets
   displayName: 'Create and Configure ARO Subnets'
   enabled: false
   inputs:
@@ -114,6 +118,7 @@ steps:
         --disable-private-link-service-network-policies true
 
 - task: AzureCLI@2
+  name: CreateCluster
   displayName: 'Create ARO Cluster'
   enabled: false
   inputs:
@@ -136,6 +141,7 @@ steps:
         --pull-secret @pullsecret.txt
 
 - task: AzureCLI@2
+  name: ClusterDetails
   displayName: 'Get ARO Cluster URL and kubeadmin password'
   enabled: true
   inputs:

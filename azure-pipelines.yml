@@ -163,7 +163,7 @@ steps:
 - task: AzureCLI@2
   displayName: 'Test variables'
   name: OutputVarables
-  enabled: false
+  enabled: true
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'

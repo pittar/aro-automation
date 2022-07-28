@@ -24,11 +24,30 @@ parameters:
     type: string
 
 steps:
-- script: echo Begin cluster creation
-  displayName: 'Run a one-line script'
+- task: AzureCLI@2
+  displayName: 'Download pullsecret'
+  enabled: true
+  inputs:
+    azureSubscription: 'Pay-As-You-Go(ea271b60-2346-49e6-85fb-422408e476ba)'
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
+      #!/bin/bash
+      
+      echo "Download pullsecret"
+      az keyvault secret download \
+        --file pullsecret.txt \
+        --name aro-pull-secret \
+        --vault-name aro-vault
+
+      echo "Listing files."
+      ls -la
 
 - task: AzureCLI@2
   displayName: 'Create ARO Cluster'
+  enabled: false
   inputs:
     azureSubscription: 'Pay-As-You-Go(ea271b60-2346-49e6-85fb-422408e476ba)'
     scriptType: 'bash'

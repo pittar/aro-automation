@@ -162,6 +162,7 @@ steps:
         --resource-group $RESOURCEGROUP)
 
       KUBEADMIN_CREDS=$(echo $CREDS_JSON | jq -r .kubeadminPassword)
+      echo "Creds: $KUBEADMIN_CREDS"
       echo "##vso[task.setvariable variable=kubeadminPass]$KUBEADMIN_CREDS"
 
       
@@ -178,4 +179,4 @@ steps:
     useGlobalConfig: true
     inlineScript: |
       echo "kubeadmin password: "
-      echo "$(ClusterDetails.kubeadminPass)"
+      echo "$(kubeadminPass)"

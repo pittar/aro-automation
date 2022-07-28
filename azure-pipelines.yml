@@ -24,6 +24,15 @@ parameters:
     type: string
 
 steps:
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+      
+      wget https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz
+      tar -xvf openshift-client-linux.tar.gz
+      ls -la
 - task: AzureCLI@2
   name: DownloadPullSecret
   displayName: 'Download pullsecret'
@@ -185,3 +194,4 @@ steps:
     inlineScript: |
       echo "kubeadmin password: $(kubeadminPass)"
       echo "API URL:            $(apiUrl)"
+

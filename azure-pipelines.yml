@@ -28,7 +28,7 @@ steps:
   displayName: 'Download pullsecret'
   enabled: true
   inputs:
-    azureSubscription: 'Pay-As-You-Go(ea271b60-2346-49e6-85fb-422408e476ba)'
+    azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
     addSpnToEnvironment: true
     scriptLocation: 'inlineScript'
@@ -47,10 +47,10 @@ steps:
       ls -la
 
 - task: AzureCLI@2
-  displayName: 'Create ARO Cluster'
-  enabled: false
+  displayName: 'Create ARO ResourceGroup'
+  enabled: true
   inputs:
-    azureSubscription: 'Pay-As-You-Go(ea271b60-2346-49e6-85fb-422408e476ba)'
+    azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
     addSpnToEnvironment: true
     scriptLocation: 'inlineScript'
@@ -64,12 +64,32 @@ steps:
         --name $RESOURCEGROUP \
         --location $LOCATION
 
+- task: AzureCLI@2
+  displayName: 'Create ARO VNet'
+  enabled: true
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
       echo "Create VNet"
       az network vnet create \
         --resource-group $RESOURCEGROUP \
         --name aro-vnet \
         --address-prefixes 10.0.0.0/22
 
+- task: AzureCLI@2
+  displayName: 'Create and Configure ARO Subnets'
+  enabled: true
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
       echo "Create supervisor node subnet"
       az network vnet subnet create \
         --resource-group $RESOURCEGROUP \
@@ -93,6 +113,16 @@ steps:
         --vnet-name aro-vnet \
         --disable-private-link-service-network-policies true
 
+- task: AzureCLI@2
+  displayName: 'Create ARO Cluster'
+  enabled: true
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
       echo "Create the cluster!"
       az aro create \
         --resource-group $RESOURCEGROUP \
@@ -102,9 +132,20 @@ steps:
         --master-subnet supervisor-subnet \
         --worker-subnet worker-subnet \
         --client-id ${{ parameters.clientID }} \
-        --client-secret ${{ parameters.clientSecret }} 
+        --client-secret ${{ parameters.clientSecret }} \
+        --pull-secret @pullsecret.txt
 
-      echo "Cluster creation complete.  Fetching console URL and credentials."
+- task: AzureCLI@2
+  displayName: 'Get ARO Cluster URL and kubeadmin password'
+  enabled: true
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
+      echo "Fetching console URL and credentials."
       az aro show \
         --name $CLUSTER \
         --resource-group $RESOURCEGROUP \

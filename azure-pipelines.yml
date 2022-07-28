@@ -37,11 +37,11 @@ steps:
       #!/bin/bash
       
       echo "Download pullsecret"
-      az keyvault secret list --vault-name ocp-key-vault
-      # az keyvault secret download \
-      #   --file pullsecret.txt \
-      #   --name aro-pull-secret \
-      #   --vault-name aro-vault
+      # az keyvault secret list --vault-name ocp-key-vault
+      az keyvault secret download \
+        --file pullsecret.txt \
+        --name aro-pull-secret \
+        --vault-name aro-vault
 
       echo "Listing files."
       ls -la

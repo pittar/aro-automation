@@ -26,7 +26,7 @@ parameters:
 steps:
 - task: AzureCLI@2
   displayName: 'Download pullsecret'
-  enabled: true
+  enabled: false
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
@@ -48,7 +48,7 @@ steps:
 
 - task: AzureCLI@2
   displayName: 'Create ARO ResourceGroup'
-  enabled: true
+  enabled: false
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
@@ -66,7 +66,7 @@ steps:
 
 - task: AzureCLI@2
   displayName: 'Create ARO VNet'
-  enabled: true
+  enabled: false
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
@@ -82,7 +82,7 @@ steps:
 
 - task: AzureCLI@2
   displayName: 'Create and Configure ARO Subnets'
-  enabled: true
+  enabled: false
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
@@ -115,7 +115,7 @@ steps:
 
 - task: AzureCLI@2
   displayName: 'Create ARO Cluster'
-  enabled: true
+  enabled: false
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'
@@ -136,6 +136,7 @@ steps:
         --pull-secret @pullsecret.txt
 
 - task: AzureCLI@2
+  name: ClusterDetails
   displayName: 'Get ARO Cluster URL and kubeadmin password'
   enabled: true
   inputs:
@@ -151,6 +152,25 @@ steps:
         --resource-group $RESOURCEGROUP \
         --query "consoleProfile.url" -o tsv
 
-      az aro list-credentials \
+      CREDS_JSON=$(az aro list-credentials \
         --name $CLUSTER \
-        --resource-group $RESOURCEGROUP
+        --resource-group $RESOURCEGROUP)
+
+      KUBEADMIN_CREDS=$(echo $CREDS_JSON | jq -r .kubeadminPassword)
+      echo "##vso[task.setvariable kubeadminPass=KUBEADMIN_CREDS]$KUBEADMIN_CREDS"
+
+      
+      
+- task: AzureCLI@2
+  displayName: 'Test variables'
+  name: OutputVarables
+  enabled: true
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
+      echo "kubeadmin password: "
+      echo "$(ClusterDetails.kubeadminPass)"

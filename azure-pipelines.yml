@@ -173,7 +173,7 @@ steps:
       KUBEADMIN_CREDS=$(echo $CREDS_JSON | jq -r .kubeadminPassword)
       echo "##vso[task.setvariable variable=kubeadminPass]$KUBEADMIN_CREDS"
       API_URL=$(echo "${CONSOLE_URL/console-openshift-console.apps/api}")
-      API_URL=$(echo "${API_URL/'.io/'/:6443}")
+      API_URL=$(echo "${API_URL/'.io/'/'.io:6443'}")
       echo "##vso[task.setvariable variable=apiUrl]$API_URL"
       echo "##vso[task.setvariable variable=consoleUrl]$CONSOLE_URL"
 

@@ -152,20 +152,25 @@ steps:
     useGlobalConfig: true
     inlineScript: |
       echo "Fetching console URL and credentials."
-      az aro show \
+      CONSOLE_URL=$(az aro show \
         --name $CLUSTER \
         --resource-group $RESOURCEGROUP \
-        --query "consoleProfile.url" -o tsv
+        --query "consoleProfile.url" -o tsv)
 
       CREDS_JSON=$(az aro list-credentials \
         --name $CLUSTER \
         --resource-group $RESOURCEGROUP)
 
       KUBEADMIN_CREDS=$(echo $CREDS_JSON | jq -r .kubeadminPassword)
-      echo "Creds: $KUBEADMIN_CREDS"
       echo "##vso[task.setvariable variable=kubeadminPass]$KUBEADMIN_CREDS"
+      API_URL=$(echo "${CONSOLE/console-openshift-console.apps/api}")
+      API_URL=$(echo "${API_URL/'.io/'/:6443}")
+      echo "##vso[task.setvariable variable=apiUrl]$API_URL"
+      echo "##vso[task.setvariable variable=consoleUrl]$CONSOLE_URL"
 
-      
+      echo "Console:   $CONSOLE_URL"
+      echo "API:       $API_URL"
+      echo "kubeadmin: $KUBEADMIN_CREDS"
       
 - task: AzureCLI@2
   displayName: 'Test variables'
@@ -178,5 +183,5 @@ steps:
     scriptLocation: 'inlineScript'
     useGlobalConfig: true
     inlineScript: |
-      echo "kubeadmin password: "
-      echo "$(kubeadminPass)"
+      echo "kubeadmin password: $(kubeadminPass)"
+      echo "API URL:            $(apiUrl)"

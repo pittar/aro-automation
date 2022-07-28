@@ -136,7 +136,6 @@ steps:
         --pull-secret @pullsecret.txt
 
 - task: AzureCLI@2
-  name: ClusterDetails
   displayName: 'Get ARO Cluster URL and kubeadmin password'
   enabled: true
   inputs:
@@ -164,7 +163,7 @@ steps:
 - task: AzureCLI@2
   displayName: 'Test variables'
   name: OutputVarables
-  enabled: true
+  enabled: false
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
     scriptType: 'bash'

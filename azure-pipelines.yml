@@ -47,7 +47,6 @@ steps:
       #!/bin/bash
       
       echo "Download pullsecret"
-      # az keyvault secret list --vault-name ocp-key-vault
       az keyvault secret download \
         --file pullsecret.txt \
         --name pullsecret \
@@ -182,8 +181,8 @@ steps:
       echo "kubeadmin: $KUBEADMIN_CREDS"
       
 - task: AzureCLI@2
-  displayName: 'Test variables'
-  name: OutputVarables
+  displayName: 'Connect to ARO'
+  name: ConnectToARO 
   enabled: true
   inputs:
     azureSubscription: ${{ parameters.azureSubscription }}
@@ -197,3 +196,24 @@ steps:
       oc login -u kubeadmin -p $(kubeadminPass) $(apiUrl)
       oc whoami
 
+- task: AzureCLI@2
+  displayName: 'Install OpenShift GitOps'
+  name: InstallGitOps 
+  enabled: true
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
+      echo "Installing OpenShift GitOps Operator"
+      oc apply -k https://github.com/redhat-cop/gitops-catalog/openshift-gitops-operator/overlays/gitops-1.5?ref=main
+      
+      # Wait 2 mintues to ensure operator has started to install.
+      sleep 120
+
+      # Wait for GitOps server to finish deploying.
+      oc rollout status deploy/openshift-gitops-server -n openshift-gitops
+
+      echo "OpenShift GitOps rollout complete!"

@@ -13,7 +13,6 @@ variables:
   LOCATION: 'canadacentral'
   RESOURCEGROUP: 'aro-rg'
   CLUSTER: 'aro-nonprod'
-  kubeadminPass: 'none'
 
 ### Subscription ID to set sub context for automation ###
 parameters:
@@ -157,7 +156,7 @@ steps:
         --resource-group $RESOURCEGROUP)
 
       KUBEADMIN_CREDS=$(echo $CREDS_JSON | jq -r .kubeadminPassword)
-      echo "##vso[task.setvariable kubeadminPass=KUBEADMIN_CREDS]$KUBEADMIN_CREDS"
+      echo "##vso[task.setvariable variable=kubeadminPass]$KUBEADMIN_CREDS"
 
       
       

@@ -1,0 +1,39 @@
+# Delete ARO Cluster Pipeline
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  LOCATION: 'canadacentral'
+  RESOURCEGROUP: 'aro-rg'
+  CLUSTER: 'aro-nonprod'
+
+### Subscription ID to set sub context for automation ###
+parameters:
+  - name: azureSubscription
+    type: string
+  - name: clientId
+    type: string
+  - name: clientSecret
+    type: string
+
+steps:
+
+- task: AzureCLI@2
+  name: DeleteCluster
+  displayName: 'Delete ARO Cluster'
+  enabled: ${{ parameters.confirmDelete }}
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
+      echo "Delete the cluster!"
+      az aro delete \
+        --resource-group $RESOURCEGROUP \
+        --name $CLUSTER

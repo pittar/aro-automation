@@ -1,0 +1,99 @@
+# Join an ARO cluster to ACM Hub
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  LOCATION: 'canadacentral'
+  RESOURCEGROUP: 'aro-rg'
+  CLUSTER: 'aro-nonprod'
+
+### Subscription ID to set sub context for automation ###
+parameters:
+  - name: azureSubscription
+    type: string
+
+steps:
+- task: Bash@3
+  name: DownloadOC
+  displayName: 'Download stable oc cli'
+  enabled: true
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+      
+      wget https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz
+      tar -xvf openshift-client-linux.tar.gz
+      ls -la
+
+- task: AzureCLI@2
+  name: ClusterDetails
+  displayName: 'Get ARO Cluster URL and kubeadmin password'
+  enabled: true
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
+      echo "Fetching console URL and credentials."
+      CONSOLE_URL=$(az aro show \
+        --name $CLUSTER \
+        --resource-group $RESOURCEGROUP \
+        --query "consoleProfile.url" -o tsv)
+
+      CREDS_JSON=$(az aro list-credentials \
+        --name $CLUSTER \
+        --resource-group $RESOURCEGROUP)
+
+      KUBEADMIN_CREDS=$(echo $CREDS_JSON | jq -r .kubeadminPassword)
+      echo "##vso[task.setvariable variable=kubeadminPass]$KUBEADMIN_CREDS"
+      API_URL=$(echo "${CONSOLE_URL/console-openshift-console.apps/api}")
+      API_URL=$(echo "${API_URL/'.io/'/'.io:6443'}")
+      echo "##vso[task.setvariable variable=apiUrl]$API_URL"
+      echo "##vso[task.setvariable variable=consoleUrl]$CONSOLE_URL"
+
+      echo "Console:   $CONSOLE_URL"
+      echo "API:       $API_URL"
+      echo "kubeadmin: $KUBEADMIN_CREDS"
+      
+- task: AzureCLI@2
+  displayName: 'Connect to ARO'
+  name: ConnectToARO 
+  enabled: true
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
+      echo "kubeadmin password: $(kubeadminPass)"
+      echo "API URL:            $(apiUrl)"
+      oc login --insecure-skip-tls-verify=true -u kubeadmin -p $(kubeadminPass) $(apiUrl)
+      oc whoami
+
+- task: AzureCLI@2
+  name: JoinToACM
+  displayName: 'Connect cluster to ACM'
+  enabled: true
+  inputs:
+    azureSubscription: ${{ parameters.azureSubscription }}
+    scriptType: 'bash'
+    addSpnToEnvironment: true
+    scriptLocation: 'inlineScript'
+    useGlobalConfig: true
+    inlineScript: |
+      #!/bin/bash
+      
+      echo "Download ACM join command."
+      JOIN_COMMAND=$(az keyvault secret show --name dev-join-command --vault-name ocp-key-vault)
+      
+      eval "$JOIN_COMMAND"
+      echo "Done!"
+
